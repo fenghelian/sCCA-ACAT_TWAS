@@ -1,5 +1,5 @@
 ####################################################
-#Example code to create sCCA cross-tissue weight
+#Script to create sCCA cross-tissue weight
 #Author: Helian Feng
 #Date: 2019-06-07
 ###################################################
@@ -9,12 +9,35 @@ require(PMA)
 require(mice)
 suppressMessages(require('plink2R'))
 
+option_list = list(
+  make_option("--geno_file", action="store", default=NA, type='character',
+              help="Path to genotype file with PLINK format"),
+  make_option("--ref_geno_file", action="store", default=NA, type='character',
+              help="Path to reference genotype file with PLINK format"),
+  make_option("--expression_file", action="store", default=NA, type='character',
+              help="Path to gene expression in csv"),
+  make_option("--fusion_location", action="store", default=NA, type='character',
+              help="Path to FUSION package"),
+  make_option("--plink_location", action="store", default=NA, type='character',
+              help="Path to plink"),
+  make_option("--gcta_location", action="store", default=NA, type='character',
+              help="Path to gcta"),
+  make_option("--gemma_location", action="store", default=NA, type='character',
+              help="Path to gemma"),
+  make_option("--tmp_location", action="store", default=NA, type='character',
+              help="Path to save tmp file"),
+  make_option("--out", action="store", default=NA, type='character',
+              help="Path to output files [required]"),
+)
+
+opt = parse_args(OptionParser(option_list=option_list))
+
+
 # read in genotype file
-geno.file="../data/sample/2.keep"
-ref.geno.file="../data/sample/2.ref"
-genos = read_plink(geno.file,impute="avg")
-ref.genos = read_plink(ref.geno.file,impute="avg")
-m = match(  genos$bim[,2] , ref.genos$bim[,2] )
+
+genos = read_plink(opt$geno_file,impute="avg")
+ref.genos = read_plink(opt$ref_geno_file,impute="avg")
+m = match(  genos$bim[,2] , opt$ref_genos$bim[,2] )
 m.keep = !is.na(m)
 genos$bed = scale(genos$bed[,m[m.keep]])
 genos$bim = genos$bim[m[m.keep],]
@@ -27,8 +50,8 @@ ref.geno<-as.data.frame(ref.genos$bed)
 geno$ID<-matrix(unlist(strsplit(rownames(geno),split=":")), ncol=2, byrow=TRUE)[,1]
 
 # read in expression matrix(each row for an individual, column for tissue)
-p_tab <- read.csv("/data/p_tab.csv", stringsAsFactors=FALSE)
-exp<-p_tab[,3:24]
+p_tab <- read.csv(opt$expression_file, stringsAsFactors=FALSE)
+exp<-p_tab[,2:]
 exp_imp <-mice(exp,m=1)
 exp_imp<-as.matrix(complete(exp_imp))
 geno_i<-as.matrix(geno%>%select(-ID))
@@ -41,18 +64,8 @@ for( j in 1:3){
   pheno<-cbind(p_tab[,1:2],0,0,0,expr_l)
   write.table(pheno,paste0("/n/pmage1/hlfeng/helian/BSLMM/",OUT,NUM,".keep.fam"),row.names = F,col.names = F,quote = F)
 
-  cmd<-paste0("Rscript /Tools/fusion/FUSION.compute_weights.R --bfile /n/",
-              OUT,NUM,".keep --tmp /n/",OUT,NUM,
-              ".tmp --out /gtex_weight/",
-              NUM,".",as.character(i),"_scca",as.character(j),
-              " --verbose 1 --hsq_p 0.01 --save_hsq --PATH_plink /Tools/Plink2/plink --PATH_gcta Tools/gcta_nr_robust --PATH_gemma /Tools/gemma.linux --models lasso,top1,enet")
-  system(cmd)
-  cmd=paste0("cat /CROSS_TIS/gtex_weight/",NUM,".",as.character(i),"_scca",as.character(j),".hsq >> /CROSS_TIS/hsq/",NUM,".hsq")
-  system(cmd)
-  cmd=paste0("rm -f /CROSS_TIS/gtex_weight/",NUM,".",as.character(i),"_scca",as.character(j),".hsq")
-  system(cmd)
-  }
-  cmd=paste0("rm /n/",OUT,NUM,"*")
-  system(cmd)
-}, error=function(e){cat("ERROR :",conditionMessage(e), "\n")})
-}
+  cmd<-paste0("Rscript",opt$fusion_location, "FUSION.compute_weights.R --bfile ",
+              opt$geno_file," --tmp ",opt$tmp_location,
+              " --out ",opt$out,
+              " --verbose 1 --hsq_p 0.01 --save_hsq --PATH_plink ", opt$plink_location, " --PATH_gcta ",opt$gcta_location," --PATH_gemma ",opt$gemma_location , " --models lasso,top1,enet")
+system(cmd)
