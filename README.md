@@ -5,7 +5,6 @@ Repository for conducting sCCA+ACAT TWAS with Fusion (1,2) and ACAT (3). The pre
 * Download and unpack the  FUSION software package from github:
 wget https://github.com/gusevlab/fusion_twas/archive/master.zip
 unzip master.zip
-cd fusion_twas-master
 
 * Download and unpack the sCCA+ACAT package from github:
 wget https://github.com/fenghelian/sCCA-ACAT_TWAS/archive/master.zip
@@ -19,6 +18,7 @@ tar xjvf LDREF.tar.bz2
 * Launch R and install required libraries:
 install.packages(c('optparse','RColorBrewer'))
 install.packages('plink2R-master/plink2R/',repos=NULL)
+install.packages(c('dplyr','tidyr'))
 
 # Steps to conduct sCCA+ACAT TWAS
 To conduct sCCA+ACAT TWAS, we first need to conduct single tissue and sCCA TWAS with single-tissue and sCCA cross-tissue weights with FUSION first. The typical TWAS analysis takes pre-computed gene expression weights (below) together with disease GWAS summary statistics to estimate the association of each gene to disease. For example, we could use the PGC Schizophrenia summary statistics to perform a TWAS with interested single GTEx tissue weights data as well as sCCA cross-tissue weights (for simplicity, we are showing the example with 2 tissues, but the workflow can be easily generalized to more than 2 tissues). The example assumes you have setup FUSION and LD reference data as above and are in the FUSION directory with an LDREF subdirectory.
@@ -62,10 +62,17 @@ Rscript fusion_twas-master/FUSION.assoc_test.R \
 --weights_dir ./WEIGHTS/ \
 --ref_ld_chr ./LDREF/1000G.EUR. \
 --chr 22 \
---out PGC2.$tissue.22.dat
+--out ./out/PGC2.$tissue.22.dat
 done
 
-3. Combine TWAS test results cross tissue
+3. Combine TWAS test results cross tissue with ACAT
+Rscript ./FUSION.assoc_test.R \
+--file_location ./out \
+--out ACAT_pvalue.tsv
+
+The output file would contain the Pvalue for each gene in each gene expression panel and the last column with column name "acat" contains the ACAT Pvalue for all the tissues.
+
+# To compute your own sCCA cross tissue weights (This step is not required for sCCA+ACAT TWAS, as the pre-computed weights are available i TWAS HUB)
 
 
 # Reference
