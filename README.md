@@ -75,12 +75,15 @@ The output file would contain the Pvalue for each gene in each gene expression p
 # To compute your own sCCA cross tissue weights 
 Note that this step is not required for sCCA+ACAT TWAS, as the pre-computed weights are available i TWAS HUB.
 
-The script for computing expression weights,it works one gene at a time, taking as input a standard binary PLINK format file (bed/bim/fam) for genotype and reference geno file, which contains only the desired SNPs in the cis-locus of the gene (or any other desired SNPs) and expression matrix for the gene (individual  in rows and tissue in columns, with first column as individual ID). W
+The script for computing expression weights,it works one gene at a time, taking as input a standard binary PLINK format file (bed/bim/fam) for genotype and reference geno file, which contains only the desired SNPs in the cis-locus of the gene (or any other desired SNPs) and expression matrix for the gene (individual  in rows and tissue in columns, with first column as individual ID). Note that, to compute the TWAS weights you also need to have the FUSION package (1,2) and the required software and package by FUSION installed installed. 
 
 A typical run looks like this:
 
 Rscript FUSION.compute_weights.R \
---bfile $INP \
+--geno_file $INP \
+--ref_geno_file $REF \ 
+--expression_file $EXP \
+--fusion_location $FUSION \
 --tmp $TMP \
 --out $OUT \
 
