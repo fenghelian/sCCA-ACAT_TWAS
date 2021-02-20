@@ -66,8 +66,8 @@ Rscript fusion_twas-master/FUSION.assoc_test.R \
 done
 
 3. Combine TWAS test results cross tissue with ACAT
-Rscript ./FUSION.assoc_test.R \
---file_location ./out \
+Rscript ./compute_acatP.r \
+--file_location ./out/ \
 --out ACAT_pvalue.tsv
 
 The output file would contain the Pvalue for each gene in each gene expression panel and the last column with column name "acat" contains the ACAT Pvalue for all the tissues.
