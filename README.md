@@ -1,23 +1,33 @@
 # sCCA-ACAT_TWAS
-Repository for conducting sCCA+ACAT TWAS with Fusion (1,2) and ACAT (3). The precomputed sCCA TWAS weights can be found at TWAS HUB (4) for GTEx version 6 and 8 (5). We also provided code to generate sCCA TWAS weights with raw gene expression and genotype data (Note that this is not required for conducting sCCA-TWAS). 
+Repository for conducting sCCA+ACAT TWAS with Fusion (1,2) and ACAT (3). The precomputed sCCA TWAS weights for GTEx gene expression version 6 and 8 (5) can be found at TWAS HUB (http://gusevlab.org/projects/fusion/#reference-functional-data) as well as FUSION weight page on for Alkes Group Page (https://alkesgroup.broadinstitute.org/FUSION/WGT/) (4). We also provided code to generate sCCA TWAS weights with raw gene expression and genotype data (Note that this is not required for conducting sCCA-TWAS). 
 
 # Installation 
 * Download and unpack the  FUSION software package from github:
+
 wget https://github.com/gusevlab/fusion_twas/archive/master.zip
+
 unzip master.zip
 
 * Download and unpack the sCCA+ACAT package from github:
+
 wget https://github.com/fenghelian/sCCA-ACAT_TWAS/archive/master.zip
+
 unzip master.zip
+
 cd sCCA-ACAT_TWAS-master
 
 * Download and unpack the (1000 Genomes)  LD reference data:
+
 wget https://data.broadinstitute.org/alkesgroup/FUSION/LDREF.tar.bz2
+
 tar xjvf LDREF.tar.bz2
 
 * Launch R and install required libraries:
+
 install.packages(c('optparse','RColorBrewer'))
+
 install.packages('plink2R-master/plink2R/',repos=NULL)
+
 install.packages(c('dplyr','tidyr'))
 
 # Steps to conduct sCCA+ACAT TWAS
@@ -28,19 +38,29 @@ To conduct sCCA+ACAT TWAS, we first need to conduct single tissue and sCCA TWAS 
 wget https://data.broadinstitute.org/alkesgroup/FUSION/SUM/PGC2.SCZ.sumstats
 
 mkdir WEIGHTS
+
 cd WEIGHTS
+
 wget https://data.broadinstitute.org/alkesgroup/FUSION/WGT/GTEx.Whole_Blood.tar.bz2
+
 tar xjf GTEx.Whole_Blood.tar.bz2
+
 wget https://data.broadinstitute.org/alkesgroup/FUSION/WGT/GTEx.Brain_Caudate_basal_ganglia.tar.bz2
+
 tar xjf GTEx.Brain_Caudate_basal_ganglia.tar.bz2
+
 wget http://gusevlab.org/projects/fusion/weights/sCCA_weights_v8_2.zip
+
 unzip sCCA_weights_v8_2.zip
 
 The WEIGHTS directory should contain a subdirectory of expression weights (which you can inspect in R), as well as several report files that describe the data (see below for details). The following sections describe the inputs in detail.
 
 2. Perform TWAS on each tissue
 
+More detailed instruction are provided at FUSION webpage (http://gusevlab.org/projects/fusion/)
+
 * Input: GWAS summary statistics
+
 The primary input is genome-wide summary statistics in LD-score format. At minimum, this is a flat file with a header row containing the following fields:
 
 SNP – SNP identifier (rsID)
@@ -66,6 +86,7 @@ Rscript fusion_twas-master/FUSION.assoc_test.R \
 done
 
 3. Combine TWAS test results cross tissue with ACAT
+
 Rscript ./compute_acatP.r \
 --file_location ./out/ \
 --out ACAT_pvalue.tsv
@@ -73,7 +94,8 @@ Rscript ./compute_acatP.r \
 The output file would contain the Pvalue for each gene in each gene expression panel and the last column with column name "acat" contains the ACAT Pvalue for all the tissues.
 
 # To compute your own sCCA cross tissue weights 
-Note that this step is not required for sCCA+ACAT TWAS, as the pre-computed weights are available i TWAS HUB.
+
+Note that this step is not required for sCCA+ACAT TWAS, as the pre-computed weights are available at TWAS HUB.
 
 The script for computing expression weights,it works one gene at a time, taking as input a standard binary PLINK format file (bed/bim/fam) for genotype and reference geno file, which contains only the desired SNPs in the cis-locus of the gene (or any other desired SNPs) and expression matrix for the gene (individual  in rows and tissue in columns, with first column as individual ID). Note that, to compute the TWAS weights you also need to have the FUSION package (1,2) and the required software and package by FUSION installed installed. 
 
