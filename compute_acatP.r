@@ -73,7 +73,7 @@ for (i in 1:length(file_list)){
 }
 # Get ACAT Pvalue
 dat<-dat%>%select(c(PANEL,ID,TWAS.P))
-dat[,3:7]<-as.data.frame(sapply(dat[,3:7], as.numeric))
+dat[,3]<-as.data.frame(sapply(dat[,3], as.numeric))
 dat <- dat%>%filter(!is.na(TWAS.P))
 dat_spread <- dat%>% spread(key = PANEL,value = TWAS.P, drop = T)
 acat<-apply(dat_spread[,2:],FUN=CCT.pval,1)
