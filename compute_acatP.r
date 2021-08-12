@@ -1,11 +1,13 @@
 suppressMessages(library('dplyr'))
 suppressMessages(library("tidyr"))
+suppressMessages(library("readr"))
+suppressMessages(library("optparse"))
 
 option_list = list(
   make_option("--file_location", action="store", default=NA, type='character',
               help="Path to TWAS result files from FUSION [required]"),
   make_option("--out", action="store", default=NA, type='character',
-              help="Path to output files [required]"),
+              help="Path to output files [required]")
 )
 
 opt = parse_args(OptionParser(option_list=option_list))
@@ -14,7 +16,15 @@ opt = parse_args(OptionParser(option_list=option_list))
 CCT.pval<-function(Pvals,Weights=NULL){
   #### check if there is NA
   if (sum(is.na(Pvals))>0){
-    stop("Cannot have NAs in the p-values!")
+    if(all(is.na(Pvals))){
+      return(NA)
+    }else{
+      Pvals=Pvals[!is.na(Pvals)]
+      if(length(Pvals)==1){
+        return(Pvals)
+      }
+    }
+    #stop("Cannot have NAs in the p-values!")
   }
   #### check if Pvals are between 0 and 1
   if ((sum(Pvals<0)+sum(Pvals>1))>0){
@@ -27,13 +37,15 @@ CCT.pval<-function(Pvals,Weights=NULL){
     warning("Cannot have both 0 and 1 p-values!")
   }
   if (is.zero){
-    return(0)
+    Pvals[Pvals==0]<-as.numeric(1.507e-143)
+    warning("There are p-values that are exactly 1!")
+    #return(0)
   }
   if (is.one){
     Pvals[Pvals==1]<-1-1/length(Pvals)
     warning("There are p-values that are exactly 1!")
   }
-
+  
   #### Default: equal weights. If not, check the validity of the user supplied weights and standadize them.
   if (is.null(Weights)){
     Weights<-rep(1/length(Pvals),length(Pvals))
@@ -44,8 +56,8 @@ CCT.pval<-function(Pvals,Weights=NULL){
   }else{
     Weights<-Weights/sum(Weights)
   }
-
-
+  
+  
   #### check if there are very small non-zero p values
   is.small<-(Pvals<1e-16)
   if (sum(is.small)==0){
@@ -65,6 +77,7 @@ CCT.pval<-function(Pvals,Weights=NULL){
 
 #Read in data
 file_list <- list.files(path=opt$file_location)
+
 dat<-NULL
 for (i in 1:length(file_list)){
   filename<-paste0(opt$file_location,file_list[i])
@@ -72,11 +85,19 @@ for (i in 1:length(file_list)){
   dat<-rbind(dat,tmp)
 }
 # Get ACAT Pvalue
+file_tab <- dat%>%select(c(FILE))
+file_tab <-file_tab%>%separate(col=FILE,into=paste0("x",0:12),sep="/")
+panel_list <-file_tab$x11
+dat$PANEL <- panel_list
+g_list<-dat%>%group_by(ID,PANEL)%>%summarize(n=n())
+g_list<-g_list$ID[g_list$n>1]
+dat<-dat%>%filter(!ID %in% g_list)
 dat<-dat%>%select(c(PANEL,ID,TWAS.P))
 dat[,3]<-as.data.frame(sapply(dat[,3], as.numeric))
 dat <- dat%>%filter(!is.na(TWAS.P))
 dat_spread <- dat%>% spread(key = PANEL,value = TWAS.P, drop = T)
-acat<-apply(dat_spread[,2:],FUN=CCT.pval,1)
+n_col <-dim(dat)[2]
+acat<-apply(dat_spread[,2:n_col],FUN=CCT.pval,1)
 dat_spread$acat<-acat
 
 write.table(dat_spread,opt$out,sep = "\t",quote = F,row.names = F,col.names = T)
