@@ -77,7 +77,6 @@ CCT.pval<-function(Pvals,Weights=NULL){
 
 #Read in data
 file_list <- list.files(path=opt$file_location)
-
 dat<-NULL
 for (i in 1:length(file_list)){
   filename<-paste0(opt$file_location,file_list[i])
@@ -88,7 +87,7 @@ for (i in 1:length(file_list)){
 file_tab <- dat%>%select(c(FILE))
 file_tab <-file_tab%>%separate(col=FILE,into=paste0("x",0:12),sep="/")
 panel_list <-file_tab$x11
-dat$PANEL <- panel_list
+dat$PANEL <- ifelse(is.na(dat$PANEL),panel_list,dat$PANEL)
 g_list<-dat%>%group_by(ID,PANEL)%>%summarize(n=n())
 g_list<-g_list$ID[g_list$n>1]
 dat<-dat%>%filter(!ID %in% g_list)
