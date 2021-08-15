@@ -77,9 +77,11 @@ CCT.pval<-function(Pvals,Weights=NULL){
 
 #Read in data
 file_list <- list.files(path=opt$file_location)
+#file_list <- list.files(path="/Users/Helian/OneDrive/biosta/TWAS/cancer_twas/data/V8/sCCA/brca/")
 dat<-NULL
 for (i in 1:length(file_list)){
   filename<-paste0(opt$file_location,file_list[i])
+  #filename<-paste0("/Users/Helian/OneDrive/biosta/TWAS/cancer_twas/data/V8/sCCA/brca/",file_list[i])
   tmp <- read_delim(filename,"\t", escape_double = FALSE, trim_ws = TRUE)
   dat<-rbind(dat,tmp)
 }
@@ -95,7 +97,7 @@ dat<-dat%>%select(c(PANEL,ID,TWAS.P))
 dat[,3]<-as.data.frame(sapply(dat[,3], as.numeric))
 dat <- dat%>%filter(!is.na(TWAS.P))
 dat_spread <- dat%>% spread(key = PANEL,value = TWAS.P, drop = T)
-n_col <-dim(dat)[2]
+n_col <-dim(dat_spread)[2]
 acat<-apply(dat_spread[,2:n_col],FUN=CCT.pval,1)
 dat_spread$acat<-acat
 
