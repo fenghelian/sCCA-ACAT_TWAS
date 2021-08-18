@@ -84,17 +84,13 @@ get_panel<-function(file_name){
 
 #Read in data
 file_list <- list.files(path=opt$file_location)
-file_list <- list.files(path="/Users/Helian/OneDrive/biosta/TWAS/cancer_twas/data/V8/sCCA/brca/")
 dat<-NULL
 for (i in 1:length(file_list)){
   filename<-paste0(opt$file_location,file_list[i])
-  filename<-paste0("/Users/Helian/OneDrive/biosta/TWAS/cancer_twas/data/V8/sCCA/brca/",file_list[i])
   tmp <- read_delim(filename,"\t", escape_double = FALSE, trim_ws = TRUE)
   dat<-rbind(dat,tmp)
 }
 # Get ACAT Pvalue
-#file_tab <- dat%>%select(c(FILE))
-#file_tab <-file_tab%>%separate(col=FILE,into=paste0("x",0:12),sep="/")
 panel_list <- lapply(dat$FILE, FUN=get_panel)
 panel_list <- unlist(panel_list, use.names=FALSE)
 dat$PANEL <- ifelse(is.na(dat$PANEL),panel_list,dat$PANEL)
