@@ -109,6 +109,9 @@ Rscript FUSION.compute_weights.R \
 --tmp $TMP \
 --out $OUT \
 
+# To cite this work
+
+Feng, H., Mancuso, N., Gusev, A., Majumdar, A., Major, M., Pasaniuc, B. and Kraft, P., 2021. Leveraging expression from multiple tissues using sparse canonical correlation analysis and aggregate tests improves the power of transcriptome-wide association studies. PLoS genetics, 17(4), p.e1008973.
 
 # Reference
 1. FUSION Tool (http://gusevlab.org/projects/fusion/)
